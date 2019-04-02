@@ -1,0 +1,23 @@
+{% extends "addressbook/base.html" %}
+
+{% block content %}
+<style>
+  #contain {
+    width: 500px;
+  }
+</style>
+</div>
+  <div class="container" id="contain">
+    <h2>Address Book List Form</h2>
+    <hr>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <input type="submit" class="btn btn-primary" value="Submit">
+        <a href="{% url 'addressbooklist_list' %}" id="cancel" name="cancel" style="color:white;" class="btn btn-warning">Back</a>
+
+    </form>
+  </div>
+{% endblock content %}

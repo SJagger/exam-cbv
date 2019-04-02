@@ -1,0 +1,27 @@
+{% extends "addressbook/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<style>
+  #contain {
+    width: 500px;
+  }
+</style>
+</div>
+    <div class="container" id="contain">
+      <form method="POST">
+        {% csrf_token %}
+        <fieldset class="form-group">
+          <legend class="border-bottom mb-4">Come and Join Us!</legend>
+          {{ form|crispy }}
+        </fieldset>
+        <div class="form-group">
+          <button class="btn btn-outline-info" type="submit">Sign Up</button>
+        </div>
+      </form>
+      <div class="border-top pt-3">
+        <small class="text-muted">
+          Already Have An Account? <a class="ml-2" href="{% url 'login' %}">Sign In</a><br>
+        </small><br>
+      </div>
+    </div>
+{% endblock content %}
