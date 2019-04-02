@@ -6,6 +6,6 @@ urlpatterns = [
     path('create_contact/', views.ContactCreate.as_view(), name='addressbooklist_create'),
     path('update_contact/<int:pk>/', views.ContactUpdate.as_view(), name='addressbooklist_update'),
     path('delete_contact/<int:pk>/', views.ContactDelete.as_view(), name='addressbooklist_delete'),
-    path('upload-csv/', views.contact_upload, name='contact_upload'),
-    path('download-csv/', views.contact_download, name='contact_download'),
+    path('upload-csv/', views.CSVImportView.as_view(), name='addressbooklist_import'),
+    path('download-csv/', views.CSVExportView.as_view(), name='addressbooklist_export'),
 ]

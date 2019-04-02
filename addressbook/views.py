@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.views.generic import View
 from django.views.generic import ListView 
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
@@ -20,7 +21,7 @@ class ContactList(LoginRequiredMixin, ListView):
     		return None
 
 class ContactCreate(CreateView):
-	
+
     def form_valid(self, form):
     	form.instance.author = self.request.user
     	return super(ContactCreate, self).form_valid(form)
@@ -38,46 +39,49 @@ class ContactDelete(DeleteView):
     model = AddressBookList
     success_url = reverse_lazy('addressbooklist_list')
 
-@login_required
-def contact_upload(request):
-    template = "addressbook/contact_upload.html"
+class CSVImportView(View):
+	def get(self, request):
+	    template = "addressbook/contact_upload.html"
 
-    prompt = {
-        'order': 'Order of the CSV should be FirstName, LastName, ContactNo, Address'
-    }
+	    prompt = {
+	        'order': 'Order of the CSV should be FirstName, LastName, ContactNo, Address'
+	    }
 
-    if request.method == "GET":
-        return render(request, template, prompt)
-    csv_file = request.FILES['file']
+	    return render(request, template, prompt)
 
-    if not csv_file.name.endswith('.csv'):
-        message.error(request, 'This is not a csv file', extra_tags='excel')
+	def post(self, request):
+		template = "addressbook/contact_upload.html"    
+		csv_file = request.FILES['file']
 
-    data_set = csv_file.read().decode('UTF-8')
-    io_string = io.StringIO(data_set)
-    next(io_string)
-    for column in csv.reader(io_string, quotechar="|"):
-        _, created = AddressBookList.objects.update_or_create(
-            fname=column[0],
-            lname=column[1],
-            cnumber=column[2],
-            address=column[3]
-        )
+		if not csv_file.name.endswith('.csv'):
+		    messages.error(request, 'This is not a csv file', extra_tags='excel')
+		    return render(request, template)
 
-    context = {}
-    return render(request, template, context)
+		data_set = csv_file.read().decode('UTF-8')
+		io_string = io.StringIO(data_set)
+		next(io_string)
+		for column in csv.reader(io_string, quotechar="|"):
+		    _, created = AddressBookList.objects.update_or_create(
+		        fname=column[0],
+		        lname=column[1],
+		        cnumber=column[2],
+		        address=column[3]
+		    )
 
-@login_required
-def contact_download(request):
-    items = AddressBookList.objects.all()
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="contact.csv"'
+		context = {}
+		return render(request, template, context)
 
-    writer = csv.writer(response)
-    writer.writerow(['FirstName', 'LastName', 'ContactNo', 'Address'])
+class CSVExportView(View):
+	def get(self, request):
+	    items = AddressBookList.objects.filter(author=self.request.user)
+	    response = HttpResponse(content_type='text/csv')
+	    response['Content-Disposition'] = 'attachment; filename="contact.csv"'
 
-    for obj in items:
-        writer.writerow([obj.fname, obj.lname, obj.cnumber, obj.address])
+	    writer = csv.writer(response)
+	    writer.writerow(['FirstName', 'LastName', 'ContactNo', 'Address'])
 
-    return response
+	    for obj in items:
+	        writer.writerow([obj.fname, obj.lname, obj.cnumber, obj.address])
+
+	    return response
 
